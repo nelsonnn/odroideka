@@ -1,6 +1,6 @@
 <launch>
-  <node pkg="odroideka" name="pololu" type="maestro"/>
+  <node pkg="odroideka" name="pololu" type="maestro.py"/>
 
-  <node pkg="odroideka" name="pid" type="pid"/>
+  <node pkg="odroideka" name="pid" type="pid.py"/>
 </launch>
 
