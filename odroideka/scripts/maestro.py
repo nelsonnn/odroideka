@@ -10,7 +10,6 @@ PY2 = version_info[0] == 2   #Running Python 2.x?
 
 def main(): 
     dist_pub = rospy.Publisher('distance', Distance, queue_size=10)
-    control_sub = rospy.Subscriber(#TODO: msg type for control
     rospy.init_node('pololu', anonymous=True)
     rate = rospy.Rate(10) #10hz, can modify this later 
     while not rospy.is_shutdown(): 
@@ -198,6 +197,6 @@ class Controller:
         self.sendCmd(cmd)
 if __name__ == '__main__': 
     try: 
-        distance_publisher() 
+        main()
     except rospy.ROSInterruptException: 
         print("Sumeet wasn't here") 
