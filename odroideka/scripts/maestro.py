@@ -2,17 +2,22 @@
 import serial
 from sys import version_info
 import rospy
-from std_msgs.msg import String 
-from  odroideka.msg import Distance  
+from std_msgs.msg import String
+from  odroideka.msg import Distance
+from odroideka.msg import Command
 
 
 PY2 = version_info[0] == 2   #Running Python 2.x?
 
-def main(): 
+def callback(data):
+    print(data.speed, data.turn)
+
+def main():
     dist_pub = rospy.Publisher('distance', Distance, queue_size=10)
+    command_sub = rospy.Subscriber('command', Command, callback)
     rospy.init_node('pololu', anonymous=True)
-    rate = rospy.Rate(10) #10hz, can modify this later 
-    while not rospy.is_shutdown(): 
+    rate = rospy.Rate(10) #10hz, can modify this later
+    while not rospy.is_shutdown():
         fake_dist = 10.0
         dist_pub.publish(fake_dist)
         rate.sleep()
@@ -57,7 +62,7 @@ class Controller:
         self.device = device
         self.port_name = ttyStr
         self.port = port
-        
+
     # Cleanup by closing USB serial port
     def close(self):
         self.usb.close()
@@ -88,7 +93,7 @@ class Controller:
     # Return Maximum channel range value
     def getMax(self, chan):
         return self.Maxs[chan]
-        
+
     # Set channel to a specified target value.  Servo will begin moving based
     # on Speed and Acceleration parameters previously set.
     # Target values will be constrained within Min and Max range, if set.
@@ -103,14 +108,14 @@ class Controller:
         # if Max is defined and Target is above, force to Max
         if self.Maxs[chan] > 0 and target > self.Maxs[chan]:
             target = self.Maxs[chan]
-        #    
+        #
         lsb = target & 0x7f #7 bits for least significant byte
         msb = (target >> 7) & 0x7f #shift 7 and take next 7 bits for msb
         cmd = chr(0x04) + chr(chan) + chr(lsb) + chr(msb)
         self.sendCmd(cmd)
         # Record Target value
         self.Targets[chan] = target
-        
+
     # Set speed of channel
     # Speed is measured as 0.25microseconds/10milliseconds
     # For the standard 1ms pulse width change to move a servo between extremes, a speed
@@ -131,7 +136,7 @@ class Controller:
         msb = (accel >> 7) & 0x7f #shift 7 and take next 7 bits for msb
         cmd = chr(0x09) + chr(chan) + chr(lsb) + chr(msb)
         self.sendCmd(cmd)
-    
+
     # Get the current position of the device on the specified channel
     # The result is returned in a measure of quarter-microseconds, which mirrors
     # the Target parameter of setTarget.
@@ -145,7 +150,7 @@ class Controller:
         lsb = ord(self.usb.read())
         msb = ord(self.usb.read())
         return (msb << 8) + lsb
-    
+
     # get analog inputs
     def getInput(self,chan):
         cmd = chr(0x21)+chr(0x0C)
@@ -154,7 +159,7 @@ class Controller:
         msb = ord(self.usb.read())
         return (msb << 8) + lsb
 
-        
+
 
 
 
@@ -164,13 +169,13 @@ class Controller:
     #
     # ***Note if target position goes outside of Maestro's allowable range for the
     # channel, then the target can never be reached, so it will appear to always be
-    # moving to the target.  
+    # moving to the target.
     def isMoving(self, chan):
         if self.Targets[chan] > 0:
             if self.getPosition(chan) != self.Targets[chan]:
                 return True
         return False
-    
+
     # Have all servo outputs reached their targets? This is useful only if Speed and/or
     # Acceleration have been set on one or more of the channels. Returns True or False.
     # Not available with Micro Maestro.
@@ -195,8 +200,9 @@ class Controller:
     def stopScript(self):
         cmd = chr(0x24)
         self.sendCmd(cmd)
-if __name__ == '__main__': 
-    try: 
+if __name__ == '__main__':
+    try:
         main()
-    except rospy.ROSInterruptException: 
-        print("Sumeet wasn't here") 
+    except rospy.ROSInterruptException:
+        print("Sumeet wasn't here")
+
