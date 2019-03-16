@@ -39,7 +39,7 @@ def callback(data):
     print("Got: ", data.dist) 
 
 def main():
-    dist_sub = rospy.Subscriber('distance', Distance, callback)
+    dist_sub = rospy.Subscriber('filtered_distance', Distance, callback)
     rospy.init_node('pid', anonymous=False)
     #test send_command 
     while not rospy.is_shutdown():
