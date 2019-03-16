@@ -1,1 +1,2 @@
-float32 dist
+float32 left
+float32 right
