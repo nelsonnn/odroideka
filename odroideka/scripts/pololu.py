@@ -20,13 +20,13 @@ def send_command(cmd):
     global board
     global throttle_pin
     global steering_pin
-    vel = 1000*cmd.speed + 6000
-    ang = 1000*cmd.turn  + 6000
+    vel = int(1000*cmd.speed + 6000)
+    ang = int(1000*cmd.turn  + 6000)
 
     board.setTarget(throttle_pin,vel)
     board.setTarget(steering_pin,ang)
     
-    print("Recieved command %d, %d" % vel, ang)
+    print "Recieved command %d, %d" % (vel, ang)
     return
 
 
@@ -53,7 +53,7 @@ def main():
     rate = rospy.Rate(60) #10hz, can modify this later
     while not rospy.is_shutdown():
         dist = get_distance()
-        dist_pub.publish(*********dist)
+        dist_pub.publish(*dist)
         rate.sleep()
 
 if __name__ == '__main__':
