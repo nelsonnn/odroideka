@@ -34,6 +34,7 @@ def pidcontroller(dist, cmd):
 
     #Give to pololu
     msg = Command()
+    msg.header.stamp = rospy.Time.now()
     msg.speed = des_speed
     msg.turn = des_steer
     command_pub.publish(msg)
@@ -42,12 +43,12 @@ def pidcontroller(dist, cmd):
 
 def main():
     #Get filtered distance data and state data
-    dist_sub = rospy.Subscriber('filtered_distance', Distance)
-    state = rospy.Subscriber('state', Command)
+    dist_sub = message_filters.Subscriber('filtered_distance', Distance)
+    state    = message_filters.Subscriber('state', Command)
     
     #Time synchronize it
-    ts = message_filters([dist_sub, state], 10)
-    ts.registerCallback(pidcontrolller)
+    ts = message_filters.TimeSynchronizer([dist_sub, state], 10)
+    ts.registerCallback(pidcontroller)
     
     rospy.init_node('pid', anonymous=False)
     rospy.spin()

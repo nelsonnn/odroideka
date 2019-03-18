@@ -50,7 +50,11 @@ def get_distance():
     right_bytes = board.getPosition(right_pin)
     left = convert2dist(left_bytes)
     right = convert2dist(right_bytes)
-    return (left, right)
+    msg = Distance()
+    msg.header.stamp = rospy.Time.now()
+    msg.left = left
+    msg.right = right
+    return msg
 
 #Coverts rolling average voltage reading to distance in cm
 def convert2dist(bytes):
@@ -58,7 +62,7 @@ def convert2dist(bytes):
     distance = 195300/((8*bytes)-1767)
     return distance
  
-def get_state()
+def get_state():
     global board
     global throttle_pin
     global steering_pin
@@ -66,7 +70,11 @@ def get_state()
     ang = board.getPosition(steering_pin)
     vel = (vel - 6000)*0.001
     ang = (ang - 6000)*0.001
-    return vel, ang
+    msg = Command()
+    msg.header.stamp = rospy.Time.now()
+    msg.speed = vel
+    msg.turn = ang
+    return msg
 
 def main():
     initialize()
@@ -78,15 +86,15 @@ def main():
     while not rospy.is_shutdown():
         dist = get_distance()
         state = get_state()
-        command_pub.publish(*state)
-        dist_pub.publish(*dist)
+        command_pub.publish(state)
+        dist_pub.publish(dist)
         rate.sleep()
     initialize()
 
 if __name__ == '__main__':
     try:
         main()
-    except:
+    except rospy.ROSInterruptException:
         initialize()
         print("Sumeet wasn't here")
 

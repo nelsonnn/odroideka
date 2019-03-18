@@ -26,7 +26,11 @@ def time_filter(msg):
 
     #ROS stuff from here
     global dist_publisher
-    dist_publisher.publish(avg)
+    new_msg = Distance()
+    new_msg.header.stamp = msg.stamp
+    new_msg.left = avg[0]
+    new_msg.right = avg[1]
+    dist_publisher.publish(new_msg)
     return
 
 if __name__ == '__main__':
