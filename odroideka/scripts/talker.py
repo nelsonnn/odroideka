@@ -45,9 +45,9 @@ def talker():
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(60) # 10hz
     while not rospy.is_shutdown():
-        c = (6000,6000)
+        c = [0,0]
         rospy.loginfo(c)
-        pub.publish(c)
+        pub.publish(*c)
         rate.sleep()
 
 if __name__ == '__main__':

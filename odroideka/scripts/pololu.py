@@ -9,7 +9,12 @@ from odroideka.msg import Command
 
 PY2 = version_info[0] == 2   #Running Python 2.x?
 
+
 board = maestro.Controller()
+throttle_pin = 1
+steering_pin = 5
+left_pin = 11
+right_pin = 2
 
 def send_command(cmd):
     global board
@@ -20,7 +25,8 @@ def send_command(cmd):
 
     board.setTarget(throttle_pin,vel)
     board.setTarget(steering_pin,ang)
-
+    
+    print("Recieved command %d, %d" % vel, ang)
     return
 
 
@@ -47,7 +53,7 @@ def main():
     rate = rospy.Rate(60) #10hz, can modify this later
     while not rospy.is_shutdown():
         dist = get_distance()
-        dist_pub.publish(dist)
+        dist_pub.publish(*********dist)
         rate.sleep()
 
 if __name__ == '__main__':
