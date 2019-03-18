@@ -37,17 +37,17 @@
 ## to the 'chatter' topic
 
 import rospy
-from odroideka.msg import Distance
+from odroideka.msg import Distance, Command
 import random
 
 def talker():
-    pub = rospy.Publisher('distance', Distance, queue_size=10)
+    pub = rospy.Publisher('command', Command, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(60) # 10hz
     while not rospy.is_shutdown():
-        d = random.randint(1,7)
-        rospy.loginfo(d)
-        pub.publish(d)
+        c = (6000,6000)
+        rospy.loginfo(c)
+        pub.publish(c)
         rate.sleep()
 
 if __name__ == '__main__':

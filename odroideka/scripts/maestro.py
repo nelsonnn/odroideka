@@ -1,29 +1,5 @@
 #!/usr/bin/env python
 import serial
-from sys import version_info
-import rospy
-from std_msgs.msg import String
-from  odroideka.msg import Distance
-from odroideka.msg import Command
-
-
-PY2 = version_info[0] == 2   #Running Python 2.x?
-
-def callback(data):
-    print(data.speed, data.turn)
-
-def main():
-    dist_pub = rospy.Publisher('distance', Distance, queue_size=10)
-    command_sub = rospy.Subscriber('command', Command, callback)
-    rospy.init_node('pololu', anonymous=True)
-    rate = rospy.Rate(10) #10hz, can modify this later
-    while not rospy.is_shutdown():
-        fake_dist = 10.0
-        dist_pub.publish(fake_dist)
-        rate.sleep()
-
-#
-#---------------------------
 # Maestro Servo Controller
 #---------------------------
 #
@@ -200,9 +176,4 @@ class Controller:
     def stopScript(self):
         cmd = chr(0x24)
         self.sendCmd(cmd)
-if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        print("Sumeet wasn't here")
 

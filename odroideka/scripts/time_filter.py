@@ -4,14 +4,8 @@ import numpy as np
 import rospy
 from odroideka.msg import Distance
 
-parser = argparse.ArgumentParser(description="ROS node to average IR distance measurements")
-parser.add_argument('-n', '--number-to-avg', type=int, required=False,
-default=32,
-                    help='Number of readings to take the average of')
-args = parser.parse_args()
-
-n = args.number_to_avg
-history = np.zeros(n)
+n = 32
+history = np.zeros((n,2))
 i = 0
 dist_publisher = rospy.Publisher('filtered_distance', Distance, queue_size = 16)
 
@@ -20,10 +14,11 @@ def time_filter(msg):
     global history
     global i
 
-    history[i] = msg.dist
+    history[i,0] = msg.left
+    history[i,1] = msg.right
     i += 1
 
-    avg = np.mean(history)
+    avg = np.mean(history,axis=0)
     
     if i == n:
         i = 0
