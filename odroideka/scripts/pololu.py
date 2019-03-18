@@ -40,10 +40,11 @@ def get_distance():
     right = convert2dist(right_bytes)
     return (left, right)
 
-
+#Coverts rolling average voltage reading to distance in cm
 def convert2dist(bytes):
-    #Ryan TODO
-    return bytes
+    bytes = int(bytes)
+    distance = 195300/((8*bytes)-1767)
+    return distance
  
 
 def main():
