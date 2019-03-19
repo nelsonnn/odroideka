@@ -15,7 +15,7 @@ steer_prop = 0.3
 max_speed  = .25
 
 
-def pidcontroller(dist, cmd):
+def pidcontroller(dist):
     print("Callback")
     global dist_prop
     global max_dist
@@ -23,7 +23,7 @@ def pidcontroller(dist, cmd):
     global steer_prop
     global max_speed
     global commmand_pub
-    steer_angle = cmd.turn * max_steer
+    steer_angle = max_steer
     # Possibly update later if we want to change the desired distance
     des_dist = 200 
     err = dist.right - des_dist
@@ -45,12 +45,12 @@ def pidcontroller(dist, cmd):
 
 def main():
     #Get filtered distance data and state data
-    dist_sub = message_filters.Subscriber('filtered_distance', Distance)
-    state    = message_filters.Subscriber('state', Command)
+    dist_sub = message_filters.Subscriber('filtered_distance', Distance, pidcontroller)
+    #state    = message_filters.Subscriber('state', Command)
     
     #Time synchronize it
-    ts = message_filters.TimeSynchronizer([dist_sub, state], 10)
-    ts.registerCallback(pidcontroller)
+    #ts = message_filters.TimeSynchronizer([dist_sub, state], 10)
+    #ts.registerCallback(pidcontroller)
     
     rospy.init_node('pid', anonymous=False)
     rospy.spin()

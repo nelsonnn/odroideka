@@ -22,12 +22,12 @@ def time_filter(msg):
     
     if i == n:
         i = 0
-        print "Avg distance reading: %f.3" % avg
+        print "Avg left: %f.3 \nAvg right: %f.3" % (msg.left,msg.right)
 
     #ROS stuff from here
     global dist_publisher
     new_msg = Distance()
-    new_msg.header.stamp = msg.stamp
+    new_msg.header.stamp = msg.header.stamp
     new_msg.left = avg[0]
     new_msg.right = avg[1]
     dist_publisher.publish(new_msg)

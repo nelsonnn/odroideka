@@ -41,13 +41,16 @@ from odroideka.msg import Distance, Command
 import random
 
 def talker():
-    pub = rospy.Publisher('command', Command, queue_size=10)
+    pub = rospy.Publisher('distance', Distance, queue_size=10)
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(60) # 10hz
     while not rospy.is_shutdown():
-        c = [.25,0]
+        c = Distance()
+        c.left = 300
+        c.right = 400
+        c.header.stamp = rospy.Time.now()
         rospy.loginfo(c)
-        pub.publish(*c)
+        pub.publish(c)
         rate.sleep()
 
 if __name__ == '__main__':
