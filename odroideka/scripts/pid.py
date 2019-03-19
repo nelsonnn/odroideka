@@ -11,12 +11,11 @@ command_pub = rospy.Publisher('command', Command, queue_size=10)
 dist_prop = 0.5
 max_dist = 1024
 max_steer = 40
-steer_prop = 0.3
+steer_prop = 0.9
 max_speed  = .25
 
 
 def pidcontroller(dist, cmd):
-    print("Callback")
     global dist_prop
     global max_dist
     global max_steer
@@ -25,14 +24,15 @@ def pidcontroller(dist, cmd):
     global commmand_pub
     steer_angle = cmd.turn * max_steer
     # Possibly update later if we want to change the desired distance
-    des_dist = 200 
+    des_dist = 146 
     err = dist.right - des_dist
-    # print(err)
+    #print(err)
     # Set to a constant for now, will change later
     des_speed = .25 #abs((err * dist_prop) / max_dist)
     # des_steer_angle = steer_angle / max_steer
-    des_steer = (((err * steer_prop) * ((max_steer - steer_angle) / max_steer)))/max_steer
-    #print("Distance: {}, Steering Angle: {}, Desired Speed: {}, Desired Steering Angle: {}".format(dist, steer_angle, des_speed, des_steer))
+    #des_steer = (((err * steer_prop) * ((max_steer - abs(steer_angle)) / max_steer)))/max_steer
+    des_steer = (err * steer_prop)/max_steer
+    print("Distance: {}, Steering Angle: {}, Desired Speed: {}, Desired Steering Angle: {}".format(dist, steer_angle, des_speed, des_steer))
 
     #Give to pololu
     msg = Command()
@@ -49,7 +49,7 @@ def main():
     state    = message_filters.Subscriber('state', Command)
     
     #Time synchronize it
-    ts = message_filters.TimeSynchronizer([dist_sub, state], 10)
+    ts = message_filters.ApproximateTimeSynchronizer([dist_sub, state], 10, .1)
     ts.registerCallback(pidcontroller)
     
     rospy.init_node('pid', anonymous=False)

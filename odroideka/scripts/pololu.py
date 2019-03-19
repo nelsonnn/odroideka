@@ -50,7 +50,7 @@ def get_distance():
     right_bytes = board.getPosition(right_pin)
     left = convert2dist(left_bytes)
     right = convert2dist(right_bytes)
-    print("%d, %d" % (left_bytes, right_bytes))
+    #print("%d, %d" % (left_bytes, right_bytes))
     msg = Distance()
     msg.header.stamp = rospy.Time.now()
     msg.left = left
@@ -83,7 +83,7 @@ def main():
     command_sub = rospy.Subscriber('command', Command, send_command)
     command_pub = rospy.Publisher('state', Command, queue_size=10)
     rospy.init_node('pololu', anonymous=True)
-    rate = rospy.Rate(10) #10hz, can modify this later
+    rate = rospy.Rate(60) #10hz, can modify this later
     while not rospy.is_shutdown():
         dist = get_distance()
         state = get_state()
