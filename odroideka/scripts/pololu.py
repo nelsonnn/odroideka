@@ -33,7 +33,7 @@ def send_command(cmd):
     global throttle_pin
     global steering_pin
     vel = int(1000*cmd.speed + 6000)
-    ang = int(1000*cmd.turn  + 6000)
+    ang = int(3000*cmd.turn  + 6000)
 
     board.setTarget(throttle_pin,vel)
     board.setTarget(steering_pin,ang)

@@ -4,7 +4,7 @@ import numpy as np
 import rospy
 from odroideka.msg import Distance
 
-n = 10 
+n = 4 
 history = np.zeros((n,2))
 i = 0
 dist_publisher = rospy.Publisher('filtered_distance', Distance, queue_size = 16)
