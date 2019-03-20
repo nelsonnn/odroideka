@@ -38,7 +38,7 @@ def send_command(cmd):
     board.setTarget(throttle_pin,vel)
     board.setTarget(steering_pin,ang)
     
-    print "Recieved command %d, %d" % (vel, ang)
+    print "Recieved command %d, %d" % (cmd.speed, cmd.turn)
     return
 
 
@@ -61,6 +61,10 @@ def get_distance():
 def convert2dist(bytes):
     bytes = float(bytes)
     distance = 195300/((8*bytes)-1767)
+    if (distance > 1000):
+        distance = 1000
+    elif (distance < 50):
+        distance = 50
     return distance
  
 def get_state():

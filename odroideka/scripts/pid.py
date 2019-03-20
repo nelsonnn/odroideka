@@ -3,7 +3,7 @@ import rospy
 from std_msgs.msg import String
 from odroideka.msg import Distance
 from odroideka.msg import Command
-import message_filters
+import message_filters 
 
 command_pub = rospy.Publisher('command', Command, queue_size=10)
 
@@ -11,9 +11,11 @@ command_pub = rospy.Publisher('command', Command, queue_size=10)
 dist_prop = 0.5
 max_dist = 1024
 max_steer = 40
-steer_prop = 0.9
-max_speed  = .25
-
+steer_prop = 0.266666 
+max_speed  = 0.3
+integral_func = 0
+integral_prop = 0.54*steer_prop
+prevtime = None
 
 def pidcontroller(dist, cmd):
     global dist_prop
@@ -22,16 +24,29 @@ def pidcontroller(dist, cmd):
     global steer_prop
     global max_speed
     global commmand_pub
-    steer_angle = cmd.turn * max_steer
-    # Possibly update later if we want to change the desired distance
-    des_dist = 146 
+    global integral_term
+    global integral_prop
+    global prevtime
+
+    # Possibly update later if we want to change the desired distanced 
+    des_dist = 180 
     err = dist.right - des_dist
     #print(err)
+
+    #Compute integral term
+    if prevtime is not None:
+        deltaT = rospy.Time.now() - prevtime
+        prevtime = rospy.Time.now()
+        integral_func += deltaT*err
+    else:
+        prevtime = rospy.Time.now()
+
+    steer_angle = cmd.turn * max_steer
     # Set to a constant for now, will change later
     des_speed = .25 #abs((err * dist_prop) / max_dist)
     # des_steer_angle = steer_angle / max_steer
     #des_steer = (((err * steer_prop) * ((max_steer - abs(steer_angle)) / max_steer)))/max_steer
-    des_steer = (err * steer_prop)/max_steer
+    des_steer = ((err * steer_prop)/max_steer) #+ (integral_prop*integral_func)
     print("Distance: {}, Steering Angle: {}, Desired Speed: {}, Desired Steering Angle: {}".format(dist, steer_angle, des_speed, des_steer))
 
     #Give to pololu
