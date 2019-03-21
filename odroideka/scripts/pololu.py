@@ -50,6 +50,7 @@ def get_distance():
     right_bytes = board.getPosition(right_pin)
     left = convert2dist(left_bytes)
     right = convert2dist(right_bytes)
+    rospy.loginfo("%d, %d" % (left_bytes, right_bytes))
     #print("%d, %d" % (left_bytes, right_bytes))
     msg = Distance()
     msg.header.stamp = rospy.Time.now()
