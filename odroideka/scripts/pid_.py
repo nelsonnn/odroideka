@@ -16,8 +16,9 @@ max_speed  = 0.3
 integral_func = 0
 integral_prop = 0.54*steer_prop
 prevtime = None
+
 wr = .8
-wl = .2
+wl = 1 - wr
 
 def pidcontroller(dist, cmd):
     global dist_prop
@@ -34,10 +35,15 @@ def pidcontroller(dist, cmd):
 
     # Possibly update later if we want to change the desired distanced 
     des_dist_r = 130 
-    des_dist_l = 100
+    des_dist_l = 120
     err_r = dist.right - des_dist_right
-    err_l = dist.left - des_dist_left
-    err = wl*err_l + wr*err_r
+    err_l = -(dist.left - des_dist_left)
+    
+    if err_l > 100:
+        err = err_r
+    else:
+        err = wr*err_r + wl*err_l
+
     #print(err)
 
     #Compute integral term
