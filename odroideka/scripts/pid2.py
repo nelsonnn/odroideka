@@ -42,7 +42,7 @@ class PID():
         de = self.error - self.prev_error
         self.prev_error = self.error
 
-        dedt = -(de / dt)
+        dedt = de / dt
         d = self.kd * dedt
         p = ((self.kp * error)/self.max_steer)
 
