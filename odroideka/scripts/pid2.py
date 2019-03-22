@@ -6,11 +6,10 @@ from odroideka.msg import Command
 import message_filters
 
 command_pub = rospy.Publisher('command', Command, queue_size=10)
-pid = PID()
 
-class PID(kp=0.25, ki=0, kd=0.25):
-    def __init__(self):
-        self.kp = kp 
+class PID():
+    def __init__(self, kp=0.25, ki=0, kd=0.25):
+        self.kp = kp
         self.ki = ki
         self.kd = kd
         self.max_speed = 0.3
@@ -57,6 +56,7 @@ class PID(kp=0.25, ki=0, kd=0.25):
         msg.turn = des_steer
         return msg
 
+pid = PID()
 
 def callback(dist, cmd):
     global pid
@@ -73,7 +73,7 @@ def main():
     rospy.init_node('pid', anonymous=False)
     # Time synchronize it
     ts = message_filters.ApproximateTimeSynchronizer([dist_sub, state], 10, .1)
-    ts.registerCallback(pidcontroller)
+    ts.registerCallback(callback)
 
     rospy.spin()
 
