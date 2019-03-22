@@ -44,12 +44,12 @@ class PID(kp=0.25, ki=0, kd=0.25):
         self.prev_error = self.error
 
         dedt = de / dt
-        d_error = self.kd * dedt
-        p_error = ((self.kp * error)/self.max_steer)
+        d = self.kd * dedt
+        p = ((self.kp * error)/self.max_steer)
 
         steer_angle = cmd.turn * self.max_steer
         des_speed = 0.35
-        des_steer = d_error + p_error
+        des_steer = p + d
 
         msg = Command()
         msg.header.stamp = rospy.Time.now()
