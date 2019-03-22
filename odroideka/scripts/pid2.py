@@ -8,10 +8,11 @@ import message_filters
 command_pub = rospy.Publisher('command', Command, queue_size=10)
 pid = PID()
 
-class PID():
+class PID(kp=0.25, ki=0, kd=0.25):
     def __init__(self):
-        self.kp = 0.25
-        self.kd = 0.25
+        self.kp = kp 
+        self.ki = ki
+        self.kd = kd
         self.max_speed = 0.3
         self.prev_error = 0
         self.error = 0
