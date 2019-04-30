@@ -13,8 +13,8 @@ PY2 = version_info[0] == 2   #Running Python 2.x?
 board = maestro.Controller()
 throttle_pin = 1
 steering_pin = 5
-left_pin = 11
-right_pin = 2
+left_pin = 2
+right_pin = 11 
 
 def initialize():
     global board
@@ -62,13 +62,13 @@ def get_distance():
 def convert2dist(bytes):
     bytes = float(bytes)
     distance = 195300/((8*bytes)-1767)
-    if (distance > 1000):
-        distance = 1000
+    if (distance > 1600):
+        distance = 1600
     elif (distance < 50):
         distance = 50
     return distance
  
-def get_state():
+def get_car_state():
     global board
     global throttle_pin
     global steering_pin
@@ -86,13 +86,13 @@ def main():
     initialize()
     dist_pub = rospy.Publisher('distance', Distance, queue_size=10)
     command_sub = rospy.Subscriber('command', Command, send_command)
-    command_pub = rospy.Publisher('state', Command, queue_size=10)
+    command_pub = rospy.Publisher('car_state', Command, queue_size=10)
     rospy.init_node('pololu', anonymous=True)
     rate = rospy.Rate(60) #10hz, can modify this later
     while not rospy.is_shutdown():
         dist = get_distance()
-        state = get_state()
-        command_pub.publish(state)
+        car_state = get_car_state()
+        command_pub.publish(car_state)
         dist_pub.publish(dist)
         rate.sleep()
     initialize()
