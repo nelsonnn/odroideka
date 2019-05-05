@@ -1,6 +1,6 @@
 <launch>
   <node pkg="odroideka" name="pololu" type="pololu.py"/>
   <node pkg="odroideka" name="time_filter" type="time_filter.py"/>
-  <node pkg="odroideka" name="pid" type="pid.py"/>
+  <node pkg="odroideka" name="controller" type="controller.py"/>
 </launch>
 
