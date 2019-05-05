@@ -1,32 +1,40 @@
 #!/usr/bin/env python
 import rospy
 import pid.py
-import turn.py
+import imu_controller
 from std_msgs.msg import String
 from odroideka.msg import Distance
 from odroideka.msg import Command
+from sensor_msgs import Imu
 import message_filters 
 
 command_pub = rospy.Publisher('command', Command, queue_size=10)
+turn = imu_controller.PIDController(10.,1.,0.)
 
-def callback(dist, cmd):
+def straightawaycallback(dist, cmd):
     global command_pub
-    # Still need control state to come from somewhere
-    if control_state == "straightaway":
+    if rospy.get_param("car_state") == "straightaway":
         controls = pidcontroller(dist,cmd)
-    else:
-        controls = turncontroller(dist,cmd)
-    command_pub.publish(controls)
+        command_pub.publish(controls)
+
+def turncallback(pose):
+    global command_pub
+    global turn
+    if rospy.get_param("car_state") == "turn":
+        controls = turn.get_controls(pose)
+        command_pub.publish(controls)
+
 
 def main():
-    #Get filtered distance data and state data
-    dist_sub = message_filters.Subscriber('filtered_distance', Distance)
-    car_state = message_filters.Subscriber('car_state', Command)
+    rospy.init_node('pid', anonymous=False)
+    rospy.set_param("car_state","straightaway")
+
+    #Get filtered distance data 
+    dist_sub = rospy.Subscriber('filtered_distance', Distance,
+    straightawaycallback)
     
-    rospy.init_node('controller', anonymous=False)
-    #Time synchronize it
-    ts = message_filters.ApproximateTimeSynchronizer([dist_sub, car_state], 10, .1)
-    ts.registerCallback(callback)
+    #IMU subscriber
+    pose_sub = rospy.Subscriber('imu/data', Imu, turncallback)
 
     rospy.spin()
 
