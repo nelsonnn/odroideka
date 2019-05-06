@@ -45,7 +45,7 @@ class PIDController():
         # High derivative -> slow down, small derivative -> speed up
         # Need to compute dervative somewhere
         # deriv_prop = deriv / max_deriv
-        des_speed = max_speed #* (1 - deriv_prop) 
+        des_speed = max_speed #* (1.01 - deriv_prop) 
     
         # Set desired steer proportional to error
         des_steer = err * steer_prop
