@@ -17,9 +17,11 @@ class PIDController():
         return
 
     def update_goal(self,current):
-        self.goal = current - PI/2
+        self.goal = current + PI/2
         return
+
     def release(self):
+	rospy.set_param("car_state","straightaway")	
 	return
 
     def get_controls(self,pose):
@@ -34,7 +36,7 @@ class PIDController():
 	if not self.goal:
             self.update_goal(current)
         error = (self.goal - current)
-	print(current)
+	print("At: %f   Goal: %f" % (current,self.goal))
         if abs(error) < self.thresh:
             print("Goal Reached")
             self.release()
@@ -61,7 +63,7 @@ class PIDController():
 
         msg = Command()     
         msg.header.stamp = rospy.Time.now()
-        msg.speed = 0.25
+        msg.speed = 0.3
         msg.turn = steer
         
         return msg

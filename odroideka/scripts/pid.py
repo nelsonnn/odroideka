@@ -9,53 +9,74 @@ import message_filters
 dist_prop = 0.5
 max_dist = 1024
 steer_prop = 0.15/40
-max_speed  = 0.3
-max_deriv = 80000
+max_speed  = 0.5
+max_deriv = 4000
 class PIDController():
-    def __init__(self):
-            self.prevtime = rospy.get_time()
-            self.prevdist = 0
+    def __init__(self,_P,_I,_D):
+	self.P = _P
+        self.I = _I
+        self.D = _D
+        self.prevtime = rospy.get_time()
+        self.prevdist = 0
+	self.err_I = 0
+	self.prevCmd = Command()
 
-    def pidcontroller(self,dist, cmd):
+    def pidcontroller(self,dist):
         global dist_prop
         global max_dist
         global steer_prop
         global max_speed
-        
+        global max_deriv
         # Desired distance from right and left walls 
         des_dist_r = 130
-        des_dist_l = 100
+        des_dist_l = 95 
     
         # Compute error terms
         err_r = dist.right - des_dist_r
         err_l = dist.left - des_dist_l
         
         # Decide error
-        if err_l > 100: # Default to right error if left is very high
+        if abs(err_l) > 200: # Default to right error if left is very high
             err = err_r
-        elif err_r > 100: # Use left error if right is unreasonably high
+        elif abs(err_r) > 200: # Use left error if right is unreasonably high
             err = err_l
         else: # Average the errors
             err = (err_r - err_l)/2
-        #print(err)
+         
+   
+	t1 = rospy.get_time()
+
+	#Compute Integral Term
+        self.err_I += err*(t1-self.prevtime)
     
-        # steer_angle = cmd.turn
-    
-        # Make desired speed based on derivative of distance from wall
-        # High derivative -> slow down, small derivative -> speed up
-        # Need to compute dervative somewhere
-        # deriv_prop = deriv / max_deriv
-        des_speed = max_speed #* (1.01 - deriv_prop) 
-    
-        # Set desired steer proportional to error
-        des_steer = err * steer_prop
-       # print("Distance: {}, Steering Angle: {}, Desired Speed: {}, Desired Steering Angle: {}".format(dist, steer_angle, des_speed, des_steer))
+        #Compute Derivative Term
+        err_D = err-self.prevdist/(t1-self.prevtime)
+        self.prevdist = err
+	self.prevtime = t1	
+	
+	#print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_D))
+	#Throw away if we can't trust it
+	if abs(err_D) > max_deriv:
+	    return self.prevCmd
+	
+	elif err_r > 150:
+	    print("TURN NOW TURN NOW TURN NOW")	
+	#Set desired steering angle
+        des_steer = err * self.P + self.err_I * self.I + err_D * self.D
+
+        deriv_prop = err_D / max_deriv
+        des_speed = max_speed * (1.01 - deriv_prop) 
     
         #Set message
         msg = Command()
         msg.header.stamp = rospy.Time.now()
         msg.speed = des_speed
         msg.turn = des_steer
+	self.prevCmd = msg
+
         #return to controller 
         return msg
 
+    def release(self):
+	rospy.set_param("car_state", "turn")
+	return

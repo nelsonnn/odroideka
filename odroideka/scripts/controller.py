@@ -12,13 +12,14 @@ import message_filters
 rospy.init_node('pid', anonymous=False)
 command_pub = rospy.Publisher('command', Command, queue_size=10)
 turn = imu_controller.PIDController(1.,0.,0.)
+straight = pid.PIDController(0.00375,0.001,0.)
 rate = rospy.Rate(60)
 
 def straightawaycallback(dist):
     global command_pub
     global rate
     if rospy.get_param("car_state") == "straightaway":
-        controls = pidcontroller(dist,cmd)
+        controls = straight.pidcontroller(dist)
         command_pub.publish(controls)
 	rate.sleep()
 
@@ -32,7 +33,7 @@ def turncallback(pose):
         rate.sleep()
 
 def main():
-    rospy.set_param("car_state","turn")
+    rospy.set_param("car_state","straightaway")
 
     #Get filtered distance data 
     dist_sub = rospy.Subscriber('filtered_distance', Distance,
