@@ -7,9 +7,9 @@ from odroideka.msg import Command
 import message_filters
 
 # Controller constants
-MAX_SPEED  = 0.5
+MAX_SPEED  = 0.3
 NUM_MEASUREMENTS = 255 # For calculating width of corridor
-TURN_THRESH = .59 # Cross-track error
+TURN_THRESH = .5 # Cross-track error
 SAFE_D = 100 # Derivative threshold for detecting turns
 MAX_CORD_WIDTH = 290 #??? Might be easier to hard-code this in than try and estimate on the fly
 i = 0
@@ -24,7 +24,7 @@ class PIDController():
         #To try and make it robust, though might just want to hard-code these in
         self.corridor_width = 286
         self.corridor_measurements = [286]
-        self.target_cte = 0.35
+        self.target_cte = 0.5
 
         #Controller variables
         self.prevtime = rospy.get_time()
@@ -78,8 +78,8 @@ class PIDController():
         #'gnostics
         print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_rD))
 
-        #Detect the turn, try to filter out falsies
-        if (abs(err_r) > TURN_THRESH) and len(self.corridor_measurements) > NUM_MEASUREMENTS/1.5:
+        #Detect the turn, try to filter out falsies while we're unsure of the width of the corridor
+        if (abs(err_r) > TURN_THRESH) and len(self.corridor_measurements) > NUM_MEASUREMENTS/1.25:
             self.release()
             return self.prevCmd
         #Set desired steering angle, constant speed

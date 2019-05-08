@@ -47,7 +47,7 @@ class PIDController():
 	    self.eI = 0
             msg = Command()
             msg.header.stamp = rospy.Time.now()
-            msg.speed = 0.4
+            msg.speed = 0.3
             msg.turn = 0.0
             return msg
 
@@ -69,7 +69,7 @@ class PIDController():
 	print("At: %f   Goal: %f D: %f" % (current,self.goal,eD))
         msg = Command()     
         msg.header.stamp = rospy.Time.now()
-        msg.speed = 0.5
+        msg.speed = 0.3
         msg.turn = steer
         
         return msg

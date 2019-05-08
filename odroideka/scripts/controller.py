@@ -36,10 +36,18 @@ def turncallback(pose):
         rate.sleep()
 
 def ballpose_callback(ballpose): 
-    pose  = (ballpose.position.x, ballpose.position.y)
+    posex  = (ballpose.position.x, ballpose.position.y)
     print("Ball pose: ", pose)
-    #TODO: Do something 
+    #top left: (0,0)   bottom right: (640, 480) 
+    center_x = 320
+    dist = posex - center_x
 
+    #turn right
+    if dist >=0:
+        pass
+    #turn left 
+    elif dist < 0: 
+        pass 
 
 def main():
     rospy.set_param("car_state","straightaway")
