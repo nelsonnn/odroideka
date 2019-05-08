@@ -8,9 +8,10 @@ import message_filters
 
 # Controller constants
 MAX_SPEED  = 0.5
-NUM_MEASUREMENTS = 255
-TURN_THRESH = .99
-SAFE_D = 4000
+NUM_MEASUREMENTS = 255 # For calculating width of corridor
+TURN_THRESH = .99 # Cross-track error
+SAFE_D = 4000 # Derivative threshold for detecting turns
+MAX_CORD_WIDTH = 99999999 #??? Might be easier to hard-code this in than try and estimate on the fly
 i = 0
 
 class PIDController():
@@ -20,7 +21,7 @@ class PIDController():
         self.I = _I
         self.D = _D
 
-        #To try and center us
+        #To try and make it robust, though might just want to hard-code these in
         self.corridor_width = 0
         self.corridor_measurements = []
         self.target_cte = 0.25
@@ -39,19 +40,20 @@ class PIDController():
 
         #Update what we think the corridor looks like, hoping that there are
         #more good measurments than false ones
-        if len(self.corridor_measurements < NUM_MEASUREMENTS):
-            self.corridor_measurements.append(dist.left + dist.right)
+        if dist.right + dist.left < MAX_CORD_WIDTH:
+            if len(self.corridor_measurements < NUM_MEASUREMENTS):
+                self.corridor_measurements.append(dist.left + dist.right)
 
-        else:
-            self.corridor_measurements[i] = dist.left + dist.right
-            i = (i+1) % NUM_MEASUREMENTS
+            else:
+                self.corridor_measurements[i] = dist.left + dist.right
+                i = (i+1) % NUM_MEASUREMENTS
 
         #Use the median here to fend off outliers
         self.corridor_width = np.median(self.corridor_measurements)
 
         #Calculate cross-track error from both sensors
-        err_l = self.target_cte - dist.left/self.corridor_width #If dist.left is small this is positive --> turn right
-        err_r = dist.right/self.corridor_width - (1-self.target_cte) #If dist.right is large this is positive --> turn right
+        err_l = dist.left/self.corridor_width - self.target_cte #If dist.left is small this is negative --> turn right
+        err_r = (1-self.target_cte) - dist.right/self.corridor_width  #If dist.right is large this is negative --> turn right
 
         #Always pick the one which errs on the side of less control input to filter out doorways and such
         if abs(err_l) > abs(err_r):
