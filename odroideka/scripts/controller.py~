@@ -14,8 +14,8 @@ import message_filters
 
 rospy.init_node('pid', anonymous=False)
 command_pub = rospy.Publisher('command', Command, queue_size=1)
-turn = imu_controller.PIDController(1.4,0.,0.005)
-straight = pid_beta.PIDController(.4,0.0,0.001)
+turn = imu_controller.PIDController(1.2,0.,0.)
+straight = pid_beta.PIDController(.5,0.0,0.)
 rate = rospy.Rate(60)
 
 def straightawaycallback(dist):

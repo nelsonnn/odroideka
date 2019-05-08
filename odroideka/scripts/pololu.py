@@ -2,6 +2,7 @@
 from sys import version_info
 import rospy
 import maestro
+import numpy as np
 from std_msgs.msg import String
 from  odroideka.msg import Distance
 from odroideka.msg import Command
@@ -13,8 +14,8 @@ PY2 = version_info[0] == 2   #Running Python 2.x?
 board = maestro.Controller()
 throttle_pin = 1
 steering_pin = 5
-left_pin = 2
-right_pin = 11 
+left_pin = 11
+right_pin = 3
 
 def initialize():
     global board
@@ -22,7 +23,7 @@ def initialize():
     global steering_pin
     
     board.setTarget(throttle_pin,6000)
-    board.setTarget(steering_pin,6000)
+    board.setTarget(steering_pin,6500)
 
     return
 
@@ -32,8 +33,10 @@ def send_command(cmd):
     global board
     global throttle_pin
     global steering_pin
+    
+    turn = np.clip(cmd.turn,-1,1)
     vel = int(1000*cmd.speed + 6000)
-    ang = int(3000*cmd.turn  + 6000)
+    ang = int(3000*cmd.turn  + 6500)
 
     board.setTarget(throttle_pin,vel)
     board.setTarget(steering_pin,ang)
