@@ -76,10 +76,10 @@ class PIDController():
         self.prevtime = t1
 
         #'gnostics
-        print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_rD)
+        print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_rD))
 
         #Detect the turn, try to filter out falsies
-        if (err_r > TURN_THRESH) and (err_rD < SAFE_D):
+        if (err_r > TURN_THRESH) and (abs(err_rD) < SAFE_D):
             self.release()
             return self.prevCmd
         #Set desired steering angle, constant speed
