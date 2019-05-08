@@ -21,7 +21,7 @@ class PIDController():
         self.D = _D
 
         #To try and center us
-        self.corridor_width = None
+        self.corridor_width = 0
         self.corridor_measurements = []
         self.target_cte = 0.25
 
@@ -46,13 +46,14 @@ class PIDController():
             self.corridor_measurements[i] = dist.left + dist.right
             i = (i+1) % NUM_MEASUREMENTS
 
-        #Use the median to fend off outliers
+        #Use the median here to fend off outliers
         self.corridor_width = np.median(self.corridor_measurements)
 
-        err_l = self.target_cte - dist.left/self.corridor_width #If dist.left is small this is positive
-        err_r = dist.right/self.corridor_width - (1-self.target_cte) #If dist.right is large this is positive
+        #Calculate cross-track error from both sensors
+        err_l = self.target_cte - dist.left/self.corridor_width #If dist.left is small this is positive --> turn right
+        err_r = dist.right/self.corridor_width - (1-self.target_cte) #If dist.right is large this is positive --> turn right
 
-        #Always pick the one which errs on the side of less control input
+        #Always pick the one which errs on the side of less control input to filter out doorways and such
         if abs(err_l) > abs(err_r):
             err = err_r
         else:
