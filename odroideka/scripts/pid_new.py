@@ -9,8 +9,8 @@ import message_filters
 dist_prop = 0.5
 max_dist = 1024
 steer_prop = 0.15/40
-max_speed  = 0.0
-max_deriv = 4000
+max_speed  = 0.5 #0.5
+max_deriv = 3500
 class PIDController():
     def __init__(self,_P,_I,_D):
 	self.P = _P
@@ -28,20 +28,20 @@ class PIDController():
         global max_speed
         global max_deriv
         # Desired distance from right and left walls 
-        des_dist_r = 180
+        des_dist_r = 130
         des_dist_l = 95 
     
         # Compute error terms
         err_r = dist.right - des_dist_r
-        err_l = -(dist.left - des_dist_l)
+        err_l = dist.left - des_dist_l
         
         # Decide error
-        if abs(err_l) > 200: # Default to right error if left is very high
-            err = err_r
-        elif abs(err_r) > 200: # Use left error if right is unreasonably high
-            err = err_l
-        else: # Average the errors
-            err = (err_r + err_l)/2
+        #if abs(err_l) > 50: # Default to right error if left is very high
+        err = err_r
+        #elif abs(err_r) > 100: # Use left error if right is unreasonably high
+        #    err = -err_l
+        #else: # Average the errors
+        #    err = (err_r - err_l)/2
          
    
 	t1 = rospy.get_time()
@@ -54,19 +54,22 @@ class PIDController():
         self.prevdist = err
 	self.prevtime = t1	
 	
-	#print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_D))
+	print("L: %f Q: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_D))
 	#Throw away if we can't trust it
 	if abs(err_D) > max_deriv:
-	    return self.prevCmd
- 	elif err_r > 10000:
-	    self.release()
-            return self.prevCmd	
+            msg = Command()
+            msg.header.stamp = rospy.Time.now()
+            msg.speed = max_speed
+            msg.turn = 0
+	    return msg
+	
+	elif err_r > 250 and err_r < 400:
+	    rospy.set_param("car_state","turn")
+	    return self.prevCmd	
 	#Set desired steering angle
         des_steer = err * self.P + self.err_I * self.I + err_D * self.D
-        deriv_prop = err_D / 4000
 
-	print(des_steer) 
-
+        deriv_prop = err_D / max_deriv
         des_speed = max_speed #* (1.01 - deriv_prop) 
     
         #Set message
@@ -81,5 +84,4 @@ class PIDController():
 
     def release(self):
 	rospy.set_param("car_state", "turn")
-        return 
-
+	return

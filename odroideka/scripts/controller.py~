@@ -14,8 +14,8 @@ import message_filters
 
 rospy.init_node('pid', anonymous=False)
 command_pub = rospy.Publisher('command', Command, queue_size=1)
-turn = imu_controller.PIDController(1.4,0.,0.005)
-straight = pid_beta.PIDController(.4,0.0,0.001)
+turn = imu_controller.PIDController(1.2,0.,0.)
+straight = pid_beta.PIDController(.5,0.0,0.)
 rate = rospy.Rate(60)
 
 def straightawaycallback(dist):
@@ -36,18 +36,10 @@ def turncallback(pose):
         rate.sleep()
 
 def ballpose_callback(ballpose): 
-    posex  = (ballpose.position.x, ballpose.position.y)
+    pose  = (ballpose.position.x, ballpose.position.y)
     print("Ball pose: ", pose)
-    #top left: (0,0)   bottom right: (640, 480) 
-    center_x = 320
-    dist = posex - center_x
+    #TODO: Do something 
 
-    #turn right
-    if dist >=0:
-        pass
-    #turn left 
-    elif dist < 0: 
-        pass 
 
 def main():
     rospy.set_param("car_state","straightaway")

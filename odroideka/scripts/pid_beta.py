@@ -7,11 +7,11 @@ from odroideka.msg import Command
 import message_filters
 
 # Controller constants
-MAX_SPEED  = 0.5
+MAX_SPEED  = 0.3
 NUM_MEASUREMENTS = 255 # For calculating width of corridor
-TURN_THRESH = .99 # Cross-track error
-SAFE_D = 4000 # Derivative threshold for detecting turns
-MAX_CORD_WIDTH = 99999999 #??? Might be easier to hard-code this in than try and estimate on the fly
+TURN_THRESH = .5 # Cross-track error
+SAFE_D = 100 # Derivative threshold for detecting turns
+MAX_CORD_WIDTH = 290 #??? Might be easier to hard-code this in than try and estimate on the fly
 i = 0
 
 class PIDController():
@@ -22,10 +22,10 @@ class PIDController():
         self.D = _D
 
         #To try and make it robust, though might just want to hard-code these in
-        self.corridor_width = 0
-        self.corridor_measurements = []
-        self.target_cte = 0.25
-        self.safe_zone = safe
+        self.corridor_width = 286
+        self.corridor_measurements = [286]
+        self.target_cte = 0.5
+
         #Controller variables
         self.prevtime = rospy.get_time()
         self.prevdist = 0
@@ -37,18 +37,18 @@ class PIDController():
         self.err_rD = 0
 
     def pidcontroller(self,dist):
-
+	global i
         #Update what we think the corridor looks like, hoping that there are
         #more good measurments than false ones
         if dist.right + dist.left < MAX_CORD_WIDTH:
-            if len(self.corridor_measurements < NUM_MEASUREMENTS):
+            if len(self.corridor_measurements) < NUM_MEASUREMENTS:
                 self.corridor_measurements.append(dist.left + dist.right)
 
             else:
                 self.corridor_measurements[i] = dist.left + dist.right
                 i = (i+1) % NUM_MEASUREMENTS
 
-        #Use the median here to fend off outliers
+       #Use the median here to fend off outliers
         self.corridor_width = np.median(self.corridor_measurements)
 
         #Calculate cross-track error from both sensors
@@ -78,21 +78,21 @@ class PIDController():
         #'gnostics
         print("L: %f R: %f AVG: %f D: %f" % (err_l, err_r, (err_r - err_l)/2, err_rD))
 
-        #Detect the turn, try to filter out falsies
-        if (err_r > TURN_THRESH) and (abs(err_rD) < SAFE_D):
+        #Detect the turn, try to filter out falsies while we're unsure of the width of the corridor
+        if (abs(err_r) > TURN_THRESH) and len(self.corridor_measurements) > NUM_MEASUREMENTS/1.25:
             self.release()
             return self.prevCmd
         #Set desired steering angle, constant speed
-        des_steer = (err * self.P) + (self.err_I * self.I) + (err_D * self.D)
+        des_steer = -( (err * self.P) + (self.err_I * self.I) + (err_D * self.D) )
         des_speed = MAX_SPEED
-
+	des_steer = np.clip(des_steer,-1,1)
         #Set message
         msg = Command()
         msg.header.stamp = rospy.Time.now()
         msg.speed = des_speed
         msg.turn = des_steer
         self.prevCmd = msg
-
+	#print(des_steer)
         #return to controller
         return msg
 
@@ -113,4 +113,4 @@ class PIDController():
         #be in a new corridor when control returns. We don't need to reset i to
         #0 because the order measurments are taken in the corridor isn't relevant
         rospy.set_param("car_state","turn")
-        self.corridor_measurements = []
+        self.corridor_measurements = [286]

@@ -5,7 +5,7 @@ from odroideka.msg import Command
 PI = 3.1415926535
 
 class PIDController():
-    def __init__(self,_P,_I,_D,thresh=0.4):
+    def __init__(self,_P,_I,_D,thresh=0.5):
 	self.goal = None
         self.P = _P
         self.I = _I
@@ -17,7 +17,11 @@ class PIDController():
         return
 
     def update_goal(self,current):
-        self.goal = current + PI/2
+        self.goal = current + .6*(PI/2)
+	if self.goal > PI:
+	    self.goal -= 2*PI
+	elif self.goal < -PI:
+	    self.goal += 2*PI
         return
 
     def release(self):
@@ -36,13 +40,14 @@ class PIDController():
 	if not self.goal:
             self.update_goal(current)
         error = (self.goal - current)
-	print("At: %f   Goal: %f" % (current,self.goal))
         if abs(error) < self.thresh:
             print("Goal Reached")
             self.release()
+	    self.goal = None
+	    self.eI = 0
             msg = Command()
             msg.header.stamp = rospy.Time.now()
-            msg.speed = 0.0
+            msg.speed = 0.3
             msg.turn = 0.0
             return msg
 
@@ -61,6 +66,7 @@ class PIDController():
         #Compose command to return
         steer = self.P*error + self.I*self.eI + self.D * eD
 
+	print("At: %f   Goal: %f D: %f" % (current,self.goal,eD))
         msg = Command()     
         msg.header.stamp = rospy.Time.now()
         msg.speed = 0.3
