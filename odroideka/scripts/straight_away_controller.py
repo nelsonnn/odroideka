@@ -96,14 +96,14 @@ class PIDController():
         #return to controller
         return msg
 
-    def adjust_for_camera(self,cam):
-        if cam.x >= .5: #Ball on right
-            safe = cam.x - 1.1*cam.r
+    def adjust_for_camera(self,camx,camr):
+        if camx >= .5: #Ball on right
+            safe = camx - 1.1*camr
             if safe <= .5 + self.safe_zone: #Left side of ball in center of frame
                 self.target_cte -= 0.05
                 self.target_cte = np.clip(self.target_cte,.35,.65)
         else: #Ball on left
-            safe = cam.x + 1.1*cam.r
+            safe = camx + 1.1*camr
             if safe >= .5 - self.safe_zone: #Right side of ball in center of frame
                 self.target_cte += 0.05
                 self.target_cte = np.clip(self.target_cte,.35,.65)
