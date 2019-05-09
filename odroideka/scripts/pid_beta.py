@@ -15,7 +15,7 @@ MAX_CORD_WIDTH = 99999999 #??? Might be easier to hard-code this in than try and
 i = 0
 
 class PIDController():
-    def __init__(self,_P,_I,_D):
+    def __init__(self,_P,_I,_D,safe=.17):
         #Gains
         self.P = _P
         self.I = _I
@@ -25,7 +25,7 @@ class PIDController():
         self.corridor_width = 0
         self.corridor_measurements = []
         self.target_cte = 0.25
-
+        self.safe_zone = safe
         #Controller variables
         self.prevtime = rospy.get_time()
         self.prevdist = 0
@@ -95,6 +95,18 @@ class PIDController():
 
         #return to controller
         return msg
+
+    def adjust_for_camera(self,cam):
+        if cam.x >= .5: #Ball on right
+            safe = cam.x - 1.1*cam.r
+            if safe <= .5 + self.safe_zone: #Left side of ball in center of frame
+                self.target_cte -= 0.05
+                self.target_cte = np.clip(self.target_cte,.35,.65)
+        else: #Ball on left
+            safe = cam.x + 1.1*cam.r
+            if safe >= .5 - self.safe_zone: #Right side of ball in center of frame
+                self.target_cte += 0.05
+                self.target_cte = np.clip(self.target_cte,.35,.65)
 
     def release(self):
         #Give up control to IMU, reset corridor measurments because we might
